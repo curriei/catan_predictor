@@ -1,3 +1,5 @@
+from board import Board
+
 def legend():
     print("""+---------------Legend---------------+
 |Resources:                          |
@@ -26,16 +28,11 @@ def legend():
 |            e1  e2  e3              |
 |                                    |
 |Vertices:                           |
-|  Vertices should be shown by the   |
-|  three hexes which surround them,  |
-|  starting with top left, moving    |
-|  clockwise. In the case that a     |
-|  vertex is on the edge of the map, |
-|  each water hex next to it should  |
-|  be denoted by a w.  In the case of|
-|  multiple two water hexes, they    |
-|  should be labeled 1 and 2, moving |
-|  clockwise.                        |
+|  Vertices should be shown by a     |
+|  battleship character, starting    |
+|  with the row denoted by a letter, |
+|  then by number starting at 1.     |
+|  a row is
 |                                    |
 |Edges: Should be denoted by a "d",  |
 |  "l", or "r", with left or right   |
@@ -63,29 +60,6 @@ def hexValues(hex):
             pass
         print(str(val) + " is not a valid entry, try again.")
     return val
-    
-def printBoard(resources, values, ports):
-    i = 0
-    print("     "+ports[0]+"      "+ports[1])
-    for row in range(5):
-        if row == 1:
-            print(" "+ports[8]+" ",end='')
-        elif row == 3:
-            print(" "+ports[7]+" ",end='')
-        else:
-            print(" "+" " * 2 * abs(row-2), end='')
-        for j in range(5 - abs(row-2)):
-            print(" "+str(values[i])+resources[i]+" ", end='')
-            i+=1
-        if row == 0:
-            print("  "+ports[2],end='')
-        elif row == 2:
-            print(" "+ports[3],end='')
-        elif row == 4:
-            print("  "+ports[4],end='')
-        print()
-    print("     " + ports[6]+"      "+ports[5])
-    print()
         
 def iterateOverBoard(hexes, entry):
     if entry == "resources":
@@ -106,10 +80,30 @@ def enterPorts():
         ports.append(val)
     return ports
     
-
+def enterSettlement(board):
+    while True:
+        vertex = input("\nEnter the vertex the settlement was placed on: ")
+        row = ord(vertex[0])-97
+        col = int(vertex[1:len(vertex)])-1
+        if row > 5 or row < 0 or col > int(12-2*abs(row-2.5))-1:
+            print("Not a valid vertex. Try again.")
+            pass
+        v_index = 0
+        for i in range(row):
+            v_index += int(12-2*abs(i-2.5))
+        v_index += col
+        if board.addSettlement(v_index):
+            print("Settlement added at " + vertex + " successfully.")
+            return
+        print("Placement conflicts with another settlement. Try again.")
 
 hexes = ["a1","a2","a3","b1","b2","b3","b4","c1","c2","c3","c4","c5","d1","d2","d3","d4","e1","e2","e3"]
-resources = iterateOverBoard(hexes,"resources")
-values = iterateOverBoard(hexes,"values")
-ports = enterPorts()
-printBoard(resources,values,ports)
+#resources = iterateOverBoard(hexes,"resources")
+#values = iterateOverBoard(hexes,"values")
+#ports = enterPorts()
+empty = ['' for i in hexes]
+ports = ['g','3','w','3','o','3','b','3','s']
+b = Board(hexes, empty, ports)
+enterSettlement(b)
+enterSettlement(b)
+print(b.toString())
