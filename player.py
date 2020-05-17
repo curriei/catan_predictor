@@ -18,19 +18,21 @@ class Player (nx.Graph):
         self.settlements.add(vertex)
         
     def place_road(self,edge):
-        if can_place_road(edge):
-            self.roads.add_edge(edge)
+        if self.can_place_road(edge):
+            self.roads.add_edge(edge[0],edge[1])
             self.hand['roads'] -= 1
     
     def place_city(self,vertex):
-        if can_place_city(vertex):
+        if self.can_place_city(vertex):
             self.hand['settlements'] += 1
             self.hand['cities'] -=1
             self.settlements.remove(vertex)
             self.cities.add(vertex)
     
     def can_place_settlement(self, vertex):
-        if not (vertex in self.settlements or vertex in self.cities) and vertex in nx.nodes(self.roads) and self.hand['settlements'] > 0
+        if not (vertex in self.settlements or vertex in self.cities) and vertex in nx.nodes(self.roads) and self.hand['settlements'] > 0:
+            return True
+        return False
         
     def can_place_city(self,vertex):
         if self.hand['cities'] > 0 and vertex in self.settlements:
@@ -42,4 +44,15 @@ class Player (nx.Graph):
             return True
         return False
         
+    def get_num_roads(self):
+        return self.roads.number_of_edges()
+    
+    def get_num_settlements(self):
+        return len(self.settlements)
+    
+    def get_num_cities(self):
+        return len(self.cities)
+        
+    def get_victory_points(self):
+        return self.get_num_cities()*2 + self.get_num_settlements
 

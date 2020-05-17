@@ -10,7 +10,7 @@ class Board:
         self.settlements = []
         self.roads = []
         self.players = [Player(), Player(), Player(), Player()]
-        self.G = _create_graph()
+        self.G = self._create_graph()
         
     def _create_graph(self):
         G = nx.Graph()
@@ -47,7 +47,7 @@ class Board:
     def addRoad(self, player, edge):
         edge = (min(edge),max(edge))
         if self.isValidRoad(player, edge):
-            index = sum([self.players[i].get_num_roads for i in range(player)])
+            index = sum([self.players[i].get_num_roads() for i in range(player)])
             self.roads.insert(index, edge)
             self.players[player].place_road(edge)
             return True
