@@ -1,12 +1,18 @@
 import networkx as nx
+from player import Player
 
 class Board:
+
     def __init__(self, resources, values, ports):
         self.resources = resources
         self.values = values
         self.ports = ports
-        self.settlements = set()
+        self.settlements = []
+        self.roads = []
+        self.players = [Player(), Player(), Player(), Player()]
+        self.G = _create_graph()
         
+    def _create_graph(self):
         G = nx.Graph()
         ab_edges = [(0,8),(2,10),(4,12),(6,14)]
         bc_edges = [(7,17),(9,19),(11,21),(13,23),(15,25)]
@@ -17,18 +23,48 @@ class Board:
         G.add_edges_from([(i,i+1) for i in range(53)])
         G.remove_edges_from([(6,7),(15,16),(26,27),(37,38),(46,47)])
         G.add_edges_from(vertical_edges)
-        self.G = G
+        return(G)
     
-    def isValidSettlement(self, vertex):
+    def isValidSettlement(self, player, vertex):
         neighbours = set(nx.neighbors(self.G, vertex)).union({vertex})
-        if len(neighbours.intersection(self.settlements)) > 0:
+        if len(neighbours.intersection(set(self.settlements))) > 0 or not self.players[player].can_place_settlement(vertex):
             return False
         return True
-        
-    def addSettlement(self,vertex):
-        if self.isValidSettlement(vertex):
-            self.settlements.add(vertex)
+      
+    def addSettlement(self,player,vertex):
+        if self.isValidSettlement(player, vertex):
+            index = sum([self.players[i].get_num_settlements() for i in range(player)])
+            self.settlements.insert(index, vertex)
+            self.players[player].place_settlement(vertex)
             return True
+        return False
+        
+    def isValidRoad(self, player, edge):
+        if edge in self.roads or not self.players[player].can_place_road(edge) or not self.G.has_edge(edge[0],edge[1]):
+            return False
+        return True
+
+    def addRoad(self, player, edge):
+        edge = (min(edge),max(edge))
+        if self.isValidRoad(player, edge):
+            index = sum([self.players[i].get_num_roads for i in range(player)])
+            self.roads.insert(index, edge)
+            self.players[player].place_road(edge)
+            return True
+        return False
+        
+    def addStartingSettlement(self, player, vertex):
+        neighbours = set(nx.neighbors(self.G, vertex)).union({vertex})
+        if len(neighbours.intersection(set(self.settlements))) > 0:
+            return False
+        index = sum([self.players[i].get_num_settlements() for i in range(player)])
+        self.settlements.insert(index, vertex)
+        self.players[player].place_initial_settlement(vertex)
+        return True
+    
+    def addStartingRoad(self, player, vertex, edge):
+        if vertex in edge:
+            return self.addRoad(player, edge)
         return False
         
     def toString(self):
@@ -53,24 +89,4 @@ class Board:
                 boardString += ("  "+self.ports[4])
             boardString += "\n"
         boardString += ("     " + self.ports[6]+"      "+self.ports[5]+ "\n")
-        return(boardString)
-#
-#class Vertex:
-#    def __init__(self, index=-1, name=''):
-#        if index == -1:
-#            self.name = string
-#            self.row = ord(string[0])-97
-#            self.column = int(string[1:len(string)])-1
-#            self.index = 0
-#            for i in range(self.row):
-#                self.index += int(12-2*abs(i-2.5))
-#            self.index += self.column
-#        else:
-#            self.index = index
-#
-#    def toString(self):
-#        return str(index)
-#        #return chr(self.row+97)+str(self.column+1)
-#
-#
-            
+        return(boardString)          
