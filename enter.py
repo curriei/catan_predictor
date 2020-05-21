@@ -54,7 +54,7 @@ def hexValues(hex):
         val = input("Value for " + hex + ": ")
         try:
             val = int(val)
-            if type(val) == int and ((val <= 12 and val >= 2) or val == 0) :
+            if type(val) == int and ((val <= 12 and val >= 2 and not val == 7) or val == 0) :
                 break
         except:
             pass
@@ -74,15 +74,20 @@ def enterPorts():
     ports = []
     for i in range(9):
         val = input("Value for port "+str(i)+": ")
-        while not val in "wgobs3":
+        while not val in "wgobs3" or len(val) == 0:
             print(val + " is not a valid entry, try again.")
             val = input("Value for port "+str(i)+": ")
         ports.append(val)
     return ports
   
 def convertVertex(string):
+    if len(string) < 2 or len(string) > 3:
+        return False
     row = ord(string[0])-97
-    col = int(string[1:len(string)])-1
+    try:
+        col = int(string[1:len(string)])-1
+    except:
+        return False
     if row > 5 or row < 0 or col > int(12-2*abs(row-2.5))-1:
         return False
     v_index = 0
@@ -100,12 +105,14 @@ def enterSettlement(player, board):
         if v_index == False:
             print("Not a valid vertex. Try again.")
             continue
-        if board.addSettlement(player, v_index):
+        if board.add_settlement(player, v_index):
             print("Settlement added at " + vertex + " successfully.")
             return
         print("Placement conflicts with another settlement. Try again.")
 
 def convertEdge(edge):
+    if len(edge) < 3 or len(edge) > 4:
+        return (False, False)
     v1 = convertVertex(edge[0:-1])
     if edge[-1] == 'l':
         v2 = convertVertex(edge[0]+str(int(edge[1:-1])-1))
@@ -118,6 +125,8 @@ def convertEdge(edge):
             v2 = convertVertex(chr(ord(edge[0])+1)+edge[1:-1])
         elif edge[0] > 'c':
             v2 = convertVertex(chr(ord(edge[0])+1)+str(int(edge[1:-1]) - 1))
+    else:
+        v2 = False
     return (v1,v2)
 
 def enterRoad(player, board):
@@ -128,7 +137,7 @@ def enterRoad(player, board):
         if not (type(edge[0])==int and type(edge[1])==int):
             print("Not a valid edge. Try again.")
             continue
-        if board.addRoad(player, edge):
+        if board.add_road(player, edge):
             print("Road added at " + edgeStr + " successfully.\n")
             return
         print("Road placement is not valid, try again.")
@@ -142,7 +151,7 @@ def enterInitialSettlement(player, board):
         if not type(v_index) == int:
             print("Not a valid vertex. Try again.")
             continue
-        if board.addStartingSettlement(player, v_index):
+        if board.add_starting_settlement(player, v_index):
             print("Settlement added at " + vertex + " successfully.")
             return v_index
         print("Placement conflicts with another settlement. Try again.")
@@ -156,7 +165,7 @@ def enterInitialRoad(player, board, vertex):
         if not (type(edge[0]) == int and type(edge[1])==int):
             print("Not a valid edge. Try again.")
             continue
-        if board.addStartingRoad(player, vertex, edge):
+        if board.add_starting_road(player, vertex, edge):
             print("Road added at " + edgeStr + " successfully.")
             return
         print("Road placement is not valid, try again.")
@@ -178,18 +187,24 @@ def getWinner():
 
 
 hexes = ["a1","a2","a3","b1","b2","b3","b4","c1","c2","c3","c4","c5","d1","d2","d3","d4","e1","e2","e3"]
-empty = ['' for i in hexes]
-ports = ['g','3','w','3','o','3','b','3','s']
 
-#resources = iterateOverBoard(hexes,"resources")
-#values = iterateOverBoard(hexes,"values")
-#ports = enterPorts()
-b = Board(hexes, empty, ports)
+#Temporary test values:
+resources = ['d','b','o', 'g','w','g','b', 's','s','w','o','g', 'b','o','s','s', 'w','w','g']
+values = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+ports = ['g','3','w','3','o','3','b','3','s']
+#Real values:
+resources = iterateOverBoard(hexes,"resources")
+values = iterateOverBoard(hexes,"values")
+ports = enterPorts()
+
+#entries into board also need to change
+b = Board(resources, values, ports)
 initialSettlementPlacement(b)
-print(b.toString())
+b.display_board()
 winner = getWinner()
 
 
-
-
 #TODO: Add the print to file functionality
+#TODO: Run tests of collecting each turn throughout the game
+#TODO: Add development card functionality
+#TODO: Add dice functionality

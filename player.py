@@ -1,11 +1,12 @@
 import networkx as nx
 
 class Player (nx.Graph):
-    def __init__(self):
+    def __init__(self, colour):
         self.hand = {'cities':4,'settlements':5,'roads':15}
         self.roads = nx.Graph()
         self.settlements = set()
         self.cities = set()
+        self.colour = colour
         
     def place_settlement(self,vertex):
         if can_place_settlement(vertex):
@@ -52,6 +53,18 @@ class Player (nx.Graph):
     
     def get_num_cities(self):
         return len(self.cities)
+    
+    def get_roads(self):
+        return [e for e in self.roads.edges]
+    
+    def get_settlements(self):
+        return self.settlements
+    
+    def get_cities(self):
+        return self.cities
+        
+    def get_colour(self):
+        return  self.colour
         
     def get_victory_points(self):
         return self.get_num_cities()*2 + self.get_num_settlements
